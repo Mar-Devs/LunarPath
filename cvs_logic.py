@@ -8,6 +8,33 @@ import datetime
 # COOLDOWN_PERIOD = datetime.timedelta(seconds=30)  # 30-second cooldown
 
 # Directory to store daily attendance logs (same as source folder)
+def load_attendance_log():
+    """
+    Reads the current day's attendance log file and updates the employee_status and last_clock_in_date.
+    """
+    log_filename = get_daily_log_filename()
+    if not os.path.isfile(log_filename):
+        return {}, {}  # No log file yet; return empty dictionaries
+
+    employee_status = {}
+    last_clock_in_date = {}
+
+    with open(log_filename, mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            employee_id = row["EmployeeID"]
+            date = row["Date"]
+            status = row["Status"]
+            
+            # Update employee status and last clock-in date
+            if "Clocking In" in status:
+                employee_status[employee_id] = "Clocked In"
+                last_clock_in_date[employee_id] = date
+            elif "Clocking Out" in status:
+                employee_status[employee_id] = "Clocked Out"
+    
+    return employee_status, last_clock_in_date
+
 log_directory = os.getcwd()  # Get the current working directory (script location)
 
 def get_daily_log_filename():
