@@ -27,9 +27,9 @@ with open('Encoded_image.p', 'rb') as file:
 encodeListKnown, employeeIds = encodeListKnownWithIds
 
 # Initialize variables
-last_logged_time = {}  # Tracks the last logged time for each employee
-COOLDOWN_PERIOD = timedelta(seconds=30)  # Cooldown period (e.g., 30 seconds)
-employee_status, last_clock_in_date = load_attendance_log()  # Load previous day's attendance
+last_logged_time = {}  
+COOLDOWN_PERIOD = timedelta(seconds=30)
+employee_status, last_clock_in_date = load_attendance_log()  
 
 while True:
     success, img = cap.read()
@@ -60,9 +60,9 @@ while True:
                 continue
 
             # Clock-In Logic
-            if employeeId not in employee_status or employee_status[employeeId] == "Clocked Out":
+            if employeeId not in employee_status:
                 if employeeId in last_clock_in_date and last_clock_in_date[employeeId] == current_date:
-                    continue  # Prevent duplicate clock-ins for the day
+                    continue  # prevent duplicate clock-ins for the day
 
                 action = "Clocking In"
                 employee_status[employeeId] = "Clocked In"
@@ -82,13 +82,14 @@ while True:
                 status = f"{action}"
                 write_to_csv(employeeId, current_date, current_time.strftime("%H:%M:%S"), status)
                 last_logged_time[employeeId] = current_time
-
-                # Keep status as "Clocked In" to allow multiple clock-outs
-                # Optionally toggle this if needed:
-                # employee_status[employeeId] = "Clocked Out"
+            elif employee_status[employeeId] == "Clocked Out":
+             action = "Clocking Out"
+             status = f"{action}"
+             write_to_csv(employeeId, current_date, current_time.strftime("%H:%M:%S"), status)
+             last_logged_time[employeeId] = current_time
 
     cv2.imshow("Webcam", img)
-    if cv2.waitKey(1) & 0xFF == ord('q'):  # Exit loop on pressing 'q'
+    if cv2.waitKey(1) & 0xFF == ord('q'):  # exit the webcam
         break
 
 cap.release()
